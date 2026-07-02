@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verify code — ClipForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg0:#09090f; --bg1:#0f0f1a; --bg3:#1a1a30;
+    --border:rgba(120,100,255,0.15); --borderB:rgba(120,100,255,0.38);
+    --purple:#7c6dfa; --pt:#a99bff; --t0:#f0eeff; --t1:#a8a0cc; --t2:#6a6490;
+  }
+  body { background:var(--bg0); color:var(--t0); font-family:'Inter',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem; }
+  .card { background:var(--bg1); border:0.5px solid var(--border); border-radius:16px; padding:2.5rem; width:100%; max-width:380px; text-align:center; }
+  .logo { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; margin-bottom:0.4rem; }
+  .logo span { color:var(--purple); }
+  h1 { font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:600; color:var(--t1); margin-bottom:0.5rem; }
+  .sub { font-size:13px; color:var(--t2); margin-bottom:1.8rem; line-height:1.6; }
+  .sub b { color:var(--t1); }
+  input#otp { width:100%; height:52px; background:var(--bg3); border:0.5px solid var(--borderB); border-radius:9px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:24px; letter-spacing:8px; color:var(--t0); margin-bottom:1.1rem; outline:none; }
+  input#otp:focus { border-color:var(--purple); box-shadow:0 0 0 3px rgba(124,109,250,0.12); }
+  button { width:100%; height:44px; background:var(--purple); color:#fff; border:none; border-radius:9px; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; cursor:pointer; }
+  button:hover { background:#6a5ce8; }
+  button:disabled { opacity:0.5; cursor:default; }
+  .err { background:rgba(220,50,50,0.08); border:0.5px solid rgba(220,50,50,0.3); border-radius:9px; padding:10px 13px; font-size:13px; color:#f08080; margin-bottom:1rem; display:none; }
+  .resend { margin-top:1.2rem; font-size:13px; color:var(--t2); }
+  .resend a { color:var(--pt); text-decoration:none; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Clip<span>Forge</span></div>
+  <h1>Enter verification code</h1>
+  <div class="sub">We sent a 6-digit code to <b id="email-display"></b></div>
+  <div class="err" id="err"></div>
+  <form id="form">
+    <input type="text" id="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="······" required />
+    <button type="submit" id="btn">Verify</button>
+  </form>
+  <div class="resend">Didn't get a code? <a id="resend-link">Resend</a></div>
+</div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email') || '';
+  const purpose = params.get('purpose') || 'signup';
+  document.getElementById('email-display').textContent = email;
+
+  document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn');
+    const errEl = document.getElementById('err');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+
+    const code = document.getElementById('otp').value.trim();
+
+    try {
+      const resp = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code, purpose }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error?.message || 'Verification failed');
+      window.location.href = '/';
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Verify';
+    }
+  });
+
+  document.getElementById('resend-link').addEventListener('click', async () => {
+    const link = document.getElementById('resend-link');
+    link.textContent = 'Sending…';
+    try {
+      await fetch('/api/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose }),
+      });
+      link.textContent = 'Sent!';
+      setTimeout(() => { link.textContent = 'Resend'; }, 3000);
+    } catch (_) {
+      link.textContent = 'Resend';
+    }
+  });
+</script>
+</body>
+</html>

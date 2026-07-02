@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClipForge — Turn YouTube into Viral Clips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg0:#09090f; --bg1:#0f0f1a; --bg2:#141425; --bg3:#1a1a30;
+    --border:rgba(120,100,255,0.15); --borderB:rgba(120,100,255,0.38);
+    --purple:#7c6dfa; --pdim:#4b3fb5;
+    --pt:#a99bff; --t0:#f0eeff; --t1:#a8a0cc; --t2:#6a6490;
+  }
+  html { scroll-behavior: smooth; }
+  body { background:var(--bg0); color:var(--t0); font-family:'Inter',sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  input::placeholder { color:var(--t2); }
+  input:focus { outline:none; border-color:var(--purple)!important; box-shadow:0 0 0 3px rgba(124,109,250,0.12)!important; }
+  @keyframes spin  { to { transform:rotate(360deg); } }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* NAV */
+  nav { position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 2.5rem; height:58px; background:rgba(9,9,15,0.92); backdrop-filter:blur(12px); border-bottom:0.5px solid var(--border); }
+  .logo { display:flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; letter-spacing:-0.02em; color:var(--t0); text-decoration:none; }
+  .logo-icon { width:28px; height:28px; border-radius:7px; background:var(--pdim); display:flex; align-items:center; justify-content:center; }
+  .nav-links { display:flex; align-items:center; gap:1.8rem; }
+  .nav-links a { font-size:13px; color:var(--t1); text-decoration:none; cursor:pointer; }
+  .hidden-link { display:none !important; }
+  .nav-cta { font-size:13px; font-weight:500; background:var(--purple); color:#fff; padding:7px 18px; border-radius:7px; border:none; cursor:pointer; }
+
+  /* HERO */
+  .hero { padding:5.5rem 2rem 4rem; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:-120px; left:50%; transform:translateX(-50%); width:650px; height:550px; border-radius:50%; background:radial-gradient(circle,rgba(124,109,250,0.1) 0%,transparent 70%); pointer-events:none; }
+  .eyebrow { display:inline-flex; align-items:center; gap:7px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--pt); letter-spacing:0.1em; text-transform:uppercase; background:rgba(124,109,250,0.1); border:0.5px solid rgba(124,109,250,0.3); padding:5px 14px; border-radius:20px; margin-bottom:1.8rem; }
+  .blink { width:6px; height:6px; border-radius:50%; background:var(--purple); animation:blink 2s infinite; }
+  h1 { font-family:'Space Grotesk',sans-serif; font-size:clamp(38px,6vw,68px); font-weight:700; line-height:1.06; letter-spacing:-0.03em; max-width:800px; margin:0 auto 1.2rem; }
+  h1 em { font-style:normal; color:var(--purple); }
+  .hero-sub { font-size:16px; color:var(--t1); max-width:480px; margin:0 auto 2.4rem; line-height:1.75; }
+  .hero-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:3.5rem; }
+  .btn-primary { display:inline-flex; align-items:center; gap:7px; background:var(--purple); color:#fff; font-size:14px; font-weight:600; font-family:'Space Grotesk',sans-serif; padding:12px 24px; border-radius:9px; border:none; cursor:pointer; box-shadow:0 0 26px rgba(124,109,250,0.3); }
+  .btn-ghost { display:inline-flex; align-items:center; gap:7px; background:transparent; color:var(--t1); font-size:14px; padding:12px 24px; border-radius:9px; border:0.5px solid var(--borderB); cursor:pointer; }
+  .stats-row { display:flex; gap:2.8rem; justify-content:center; flex-wrap:wrap; border-top:0.5px solid var(--border); padding-top:2.2rem; }
+  .stat-num { font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; text-align:center; }
+  .stat-lbl { font-size:11px; color:var(--t2); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; text-align:center; }
+
+  /* DIVIDER */
+  hr { height:0.5px; background:var(--border); border:none; }
+
+  /* SECTIONS */
+  .section { padding:5.5rem 2rem; max-width:1080px; margin:0 auto; }
+  .sec-label { display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--pt); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.9rem; }
+  .sec-label::before { content:''; width:22px; height:1px; background:var(--purple); }
+  h2 { font-family:'Space Grotesk',sans-serif; font-size:clamp(26px,3.5vw,40px); font-weight:700; color:var(--t0); letter-spacing:-0.025em; margin-bottom:0.75rem; line-height:1.15; }
+  .sec-sub { font-size:15px; color:var(--t1); max-width:460px; line-height:1.75; margin-bottom:3rem; }
+
+  /* HOW IT WORKS */
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.5px; background:var(--border); border-radius:14px; overflow:hidden; }
+  .step { background:var(--bg1); padding:1.75rem 1.5rem; }
+  .step-num { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--purple); letter-spacing:0.08em; margin-bottom:1rem; }
+  .step-icon { width:40px; height:40px; border-radius:9px; background:rgba(124,109,250,0.1); border:0.5px solid rgba(124,109,250,0.22); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+  .step h3 { font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; color:var(--t0); margin-bottom:6px; }
+  .step p { font-size:13px; color:var(--t1); line-height:1.65; }
+
+  /* FEATURES */
+  .feats-wrap { padding:5.5rem 2rem; background:var(--bg1); border-top:0.5px solid var(--border); border-bottom:0.5px solid var(--border); }
+  .feats-inner { max-width:1080px; margin:0 auto; }
+  .feats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; }
+  .feat { background:var(--bg2); border:0.5px solid var(--border); border-radius:13px; padding:1.6rem; }
+  .feat-tag { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--pt); background:rgba(124,109,250,0.1); border:0.5px solid rgba(124,109,250,0.22); border-radius:4px; padding:3px 9px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.9rem; }
+  .feat h3 { font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--t0); margin-bottom:6px; }
+  .feat p { font-size:13px; color:var(--t1); line-height:1.65; }
+
+  /* TOOL */
+  .tool-wrap { padding:5.5rem 2rem; max-width:820px; margin:0 auto; }
+  .tool-head { text-align:center; margin-bottom:2.5rem; }
+  .tool-shell { background:var(--bg1); border:0.5px solid var(--border); border-radius:16px; overflow:hidden; }
+  .chrome { background:var(--bg2); border-bottom:0.5px solid var(--border); padding:11px 14px; display:flex; align-items:center; gap:10px; }
+  .cdots { display:flex; gap:5px; }
+  .cdot { width:10px; height:10px; border-radius:50%; }
+  .curl { flex:1; background:var(--bg3); border:0.5px solid var(--border); border-radius:5px; padding:4px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); }
+  .tbody { padding:1.75rem; }
+  .t-row { display:flex; gap:9px; margin-bottom:1.1rem; }
+  .settings-row { display:flex; gap:14px; margin-bottom:1.2rem; flex-wrap:wrap; }
+  .setting-group { flex:1; min-width:140px; }
+  .setting-lbl { display:block; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+  .setting-select { width:100%; height:38px; background:var(--bg3); border:0.5px solid var(--borderB); border-radius:8px; padding:0 12px; color:var(--t0); font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; outline:none; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23a8a0cc' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; }
+  .setting-select:focus { border-color:var(--purple); box-shadow:0 0 0 3px rgba(124,109,250,0.12); }
+  .setting-select option { background:var(--bg3); color:var(--t0); }
+  .t-inp { flex:1; height:44px; background:var(--bg3); border:0.5px solid var(--borderB); border-radius:9px; padding:0 14px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--t0); }
+  .t-btn { height:44px; padding:0 22px; border-radius:9px; background:var(--purple); color:#fff; border:none; font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .t-btn:disabled { opacity:0.45; cursor:default; }
+  .status { display:flex; align-items:center; gap:9px; background:var(--bg3); border:0.5px solid var(--border); border-radius:9px; padding:11px 14px; margin-bottom:1.1rem; font-size:13px; color:var(--t1); font-family:'JetBrains Mono',monospace; }
+  .spinner { width:15px; height:15px; border-radius:50%; border:2px solid rgba(120,100,255,0.22); border-top-color:var(--purple); animation:spin 0.75s linear infinite; flex-shrink:0; }
+  .err-bar { background:rgba(220,50,50,0.08); border:0.5px solid rgba(220,50,50,0.3); border-radius:9px; padding:11px 14px; margin-bottom:1rem; font-size:13px; color:#f08080; }
+  .meta { background:var(--bg3); border:0.5px solid var(--border); border-radius:9px; padding:1rem 1.2rem; margin-bottom:1.1rem; display:flex; align-items:flex-start; gap:12px; }
+  .thumb { width:72px; height:40px; border-radius:6px; background:var(--bg2); border:0.5px solid var(--border); overflow:hidden; flex-shrink:0; }
+  .thumb img { width:100%; height:100%; object-fit:cover; }
+  .meta-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:var(--t0); margin-bottom:5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:5px; }
+  .chip { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); background:var(--bg2); border:0.5px solid var(--border); border-radius:4px; padding:2px 8px; }
+  .clips-lbl { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--pt); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:9px; }
+  .clip { background:var(--bg3); border:0.5px solid var(--border); border-radius:9px; padding:13px 14px; cursor:pointer; display:flex; align-items:flex-start; gap:12px; margin-bottom:8px; transition:border-color 0.15s; }
+  .clip:hover { border-color:var(--borderB); }
+  .clip.active { border:1.5px solid var(--purple); background:rgba(124,109,250,0.06); }
+  .clip-num { width:25px; height:25px; border-radius:50%; background:var(--bg2); border:0.5px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .clip.active .clip-num { background:rgba(124,109,250,0.15); color:var(--pt); border-color:rgba(124,109,250,0.3); }
+  .clip-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:var(--t0); margin-bottom:3px; }
+  .clip-desc { font-size:12px; color:var(--t1); line-height:1.55; margin-bottom:6px; }
+  .clip-foot { display:flex; gap:6px; flex-wrap:wrap; }
+  .ts-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 8px; border-radius:4px; background:rgba(124,109,250,0.1); color:var(--pt); border:0.5px solid rgba(124,109,250,0.25); }
+  .tag { font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 8px; border-radius:4px; }
+  .tag-viral       { color:#c084fc; background:rgba(192,132,252,0.1); border:0.5px solid rgba(192,132,252,0.28); }
+  .tag-highlight   { color:#34d399; background:rgba(52,211,153,0.08); border:0.5px solid rgba(52,211,153,0.22); }
+  .tag-educational { color:#60a5fa; background:rgba(96,165,250,0.08); border:0.5px solid rgba(96,165,250,0.22); }
+  .tag-funny       { color:#fbbf24; background:rgba(251,191,36,0.08); border:0.5px solid rgba(251,191,36,0.22); }
+  .preview { background:var(--bg0); border:0.5px solid var(--borderB); border-radius:12px; padding:1.2rem; margin-bottom:1.1rem; }
+  .preview-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+  .preview-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:var(--t0); }
+  .close-btn { background:none; border:none; color:var(--t2); cursor:pointer; font-size:17px; line-height:1; }
+  .ts-row { display:flex; align-items:center; gap:7px; margin-bottom:11px; }
+  .ts-chip { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--pt); background:rgba(124,109,250,0.1); border:0.5px solid rgba(124,109,250,0.25); border-radius:5px; padding:3px 9px; }
+  .ts-lbl { font-size:12px; color:var(--t2); }
+  .block { background:var(--bg1); border-radius:7px; padding:11px 13px; margin-bottom:7px; }
+  .block-lbl { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px; }
+  .block-txt { font-size:13px; color:var(--t1); line-height:1.6; }
+  .act-row { display:flex; gap:7px; margin-top:11px; flex-wrap:wrap; }
+  .layout-row { display:flex; gap:8px; }
+  .layout-btn { display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; padding:10px 8px; border-radius:8px; background:var(--bg3); border:0.5px solid var(--border); color:var(--t2); cursor:pointer; font-size:11px; line-height:1.35; text-align:center; transition:all 0.15s; }
+  .layout-btn:hover { border-color:var(--borderB); color:var(--t1); }
+  .layout-btn.active { border:1.5px solid var(--purple); background:rgba(124,109,250,0.08); color:var(--pt); }
+  .layout-btn svg { color:inherit; }
+  .act-primary { height:35px; padding:0 15px; border-radius:7px; background:var(--purple); color:#fff; border:none; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:5px; }
+  .act-ghost { height:35px; padding:0 15px; border-radius:7px; background:transparent; color:var(--t1); border:0.5px solid var(--borderB); font-size:13px; cursor:pointer; display:flex; align-items:center; gap:5px; }
+
+  /* PROOF */
+  .history-empty { color:var(--t2); font-size:14px; padding:1.5rem; text-align:center; background:var(--bg1); border:0.5px solid var(--border); border-radius:13px; }
+  .history-list { display:flex; flex-direction:column; gap:10px; }
+  .history-card { background:var(--bg1); border:0.5px solid var(--border); border-radius:13px; padding:1rem 1.25rem; display:flex; align-items:flex-start; gap:14px; }
+  .history-thumb { width:84px; height:48px; border-radius:7px; background:var(--bg2); border:0.5px solid var(--border); overflow:hidden; flex-shrink:0; }
+  .history-thumb img { width:100%; height:100%; object-fit:cover; }
+  .history-body { flex:1; min-width:0; }
+  .history-title { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--t0); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .history-meta { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:8px; }
+  .history-actions { display:flex; gap:7px; }
+  .history-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); flex-shrink:0; padding-top:2px; }
+
+  .proof-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:15px; }
+  .proof-card { background:var(--bg1); border:0.5px solid var(--border); border-radius:13px; padding:1.4rem; }
+  .stars { color:var(--purple); font-size:14px; letter-spacing:2px; margin-bottom:11px; }
+  .proof-q { font-size:13px; color:var(--t1); line-height:1.7; margin-bottom:12px; font-style:italic; }
+  .proof-author { display:flex; align-items:center; gap:9px; }
+  .avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; }
+  .proof-name { font-size:13px; font-weight:600; color:var(--t0); font-family:'Space Grotesk',sans-serif; }
+  .proof-role { font-size:11px; color:var(--t2); font-family:'JetBrains Mono',monospace; }
+
+  /* CTA */
+  .cta-wrap { padding:6rem 2rem; text-align:center; border-top:0.5px solid var(--border); position:relative; overflow:hidden; }
+  .cta-wrap::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:440px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(124,109,250,0.09) 0%,transparent 65%); pointer-events:none; }
+  .cta-wrap h2 { margin-bottom:0.9rem; }
+  .cta-sub { font-size:15px; color:var(--t1); margin-bottom:2rem; }
+
+  /* FOOTER */
+  footer { border-top:0.5px solid var(--border); padding:1.75rem 2.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+  .foot-logo { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:700; color:var(--t2); }
+  .foot-logo span { color:var(--purple); }
+  .foot-links { display:flex; gap:1.4rem; }
+  .foot-links a { font-size:12px; color:var(--t2); text-decoration:none; }
+  .foot-copy { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); }
+
+  @media(max-width:640px) {
+    nav { padding:0 1.25rem; }
+    .nav-links a:not(.nav-cta) { display:none; }
+    .hero, .section, .tool-wrap { padding-left:1.25rem; padding-right:1.25rem; }
+    .feats-wrap { padding-left:1.25rem; padding-right:1.25rem; }
+    footer { padding:1.25rem; flex-direction:column; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg></div>
+    Clip<span style="color:var(--purple)">Forge</span>
+  </a>
+  <div class="nav-links" id="nav-links">
+    <a onclick="scrollTool()">How it works</a>
+    <a onclick="scrollTool()">Features</a>
+    <a onclick="document.getElementById('history-section').scrollIntoView({behavior:'smooth'})">History</a>
+    <a id="admin-link" href="/admin" class="hidden-link">Admin</a>
+    <a id="logout-link" onclick="doLogout()" style="cursor:pointer">Log out</a>
+    <button class="nav-cta" onclick="scrollTool()">Try it free →</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow"><span class="blink"></span>AI-Powered Clip Generator</div>
+  <h1>Turn any YouTube video into <em>viral 20-second clips</em></h1>
+  <p class="hero-sub">Paste a link. ClipForge's AI finds the highest-impact moments and hands you ready-to-post clips with captions — in seconds.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="scrollTool()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+      Forge your first clip
+    </button>
+    <button class="btn-ghost" onclick="scrollTool()">See how it works</button>
+  </div>
+  <div class="stats-row">
+    <div><div class="stat-num">5</div><div class="stat-lbl">clips per video</div></div>
+    <div><div class="stat-num">20s</div><div class="stat-lbl">perfect duration</div></div>
+    <div><div class="stat-num">3</div><div class="stat-lbl">platforms covered</div></div>
+    <div><div class="stat-num">&lt;30s</div><div class="stat-lbl">analysis time</div></div>
+  </div>
+</section>
+
+<hr>
+
+<div class="section">
+  <div class="sec-label">Process</div>
+  <h2>From long-form to viral<br>in three steps</h2>
+  <p class="sec-sub">No editing experience needed. ClipForge does the heavy lifting so you stay focused on creating.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">STEP 01</div>
+      <div class="step-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <h3>Paste your link</h3>
+      <p>Drop any YouTube URL — standard, Shorts, or youtu.be links (including ?si= params) all work instantly.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 02</div>
+      <div class="step-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <h3>AI analyzes content</h3>
+      <p>The model identifies hooks, punchlines, key insights, and emotional peaks — the moments that stop scrollers.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 03</div>
+      <div class="step-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <h3>Get clip blueprints</h3>
+      <p>Receive exact timestamps, platform-native captions, engagement rationale, and the best channel for each clip.</p>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="feats-wrap">
+  <div class="feats-inner">
+    <div class="sec-label">Capabilities</div>
+    <h2>Everything you need to<br>repurpose content fast</h2>
+    <p class="sec-sub" style="margin-bottom:2.5rem">Built for creators, marketers, and agencies who want results without the editing grind.</p>
+    <div class="feats-grid">
+      <div class="feat"><div class="feat-tag">AI Analysis</div><h3>Moment detection</h3><p>Finds segments with the highest viral potential — emotional peaks, surprising facts, laugh moments, and clear value drops.</p></div>
+      <div class="feat"><div class="feat-tag">Copywriting</div><h3>Platform-native captions</h3><p>Every clip comes with a ready-to-post caption tuned for TikTok, Reels, or Shorts — with relevant hashtags baked in.</p></div>
+      <div class="feat"><div class="feat-tag">Strategy</div><h3>Engagement rationale</h3><p>Understand exactly why each clip works: the psychological hook, the retention pattern, and what makes it shareable.</p></div>
+      <div class="feat"><div class="feat-tag">Distribution</div><h3>Platform routing</h3><p>Each clip gets a recommendation — TikTok, Reels, or Shorts — based on content type and format fit.</p></div>
+      <div class="feat"><div class="feat-tag">Precision</div><h3>Exact timestamps</h3><p>Jump directly to any clip moment in YouTube with one click. No scrubbing, no guesswork.</p></div>
+      <div class="feat"><div class="feat-tag">Speed</div><h3>Sub-30s analysis</h3><p>From link paste to 5 fully detailed clip suggestions in under 30 seconds. Batch a full week in an afternoon.</p></div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="tool-wrap" id="tool-section">
+  <div class="tool-head">
+    <div class="sec-label" style="justify-content:center">Live Tool</div>
+    <h2>Try ClipForge right now</h2>
+    <p style="font-size:14px;color:var(--t1);max-width:400px;margin:0.5rem auto 0">No signup. Paste a YouTube link and watch the AI work.</p>
+  </div>
+  <div class="tool-shell">
+    <div class="chrome">
+      <div class="cdots">
+        <span class="cdot" style="background:#ff5f57"></span>
+        <span class="cdot" style="background:#febc2e"></span>
+        <span class="cdot" style="background:#28c840"></span>
+      </div>
+      <div class="curl">clipforge.ai/forge</div>
+    </div>
+    <div class="tbody">
+      <div class="t-row">
+        <input class="t-inp" id="cf-url" type="text" placeholder="https://www.youtube.com/watch?v=..." />
+        <button class="t-btn" id="cf-btn" onclick="cfAnalyze()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          <span id="cf-btn-txt">Forge</span>
+        </button>
+      </div>
+      <div class="settings-row">
+        <div class="setting-group">
+          <label class="setting-lbl">Clip duration</label>
+          <select class="setting-select" id="cf-duration">
+            <option value="15">15 seconds</option>
+            <option value="20" selected>20 seconds</option>
+            <option value="30">30 seconds</option>
+            <option value="45">45 seconds</option>
+            <option value="60">60 seconds</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label class="setting-lbl">Number of clips</label>
+          <select class="setting-select" id="cf-count">
+            <option value="3">3 clips</option>
+            <option value="5" selected>5 clips</option>
+            <option value="7">7 clips</option>
+            <option value="10">10 clips</option>
+          </select>
+        </div>
+      </div>
+      <div id="cf-err" style="display:none" class="err-bar"></div>
+      <div id="cf-status" style="display:none" class="status">
+        <div class="spinner"></div>
+        <span id="cf-status-txt">Analyzing…</span>
+      </div>
+      <div id="cf-meta" style="display:none" class="meta">
+        <div class="thumb" id="cf-thumb"></div>
+        <div style="flex:1">
+          <div class="meta-title" id="cf-title"></div>
+          <div class="chips" id="cf-chips"></div>
+        </div>
+      </div>
+      <div id="cf-clips-wrap" style="display:none">
+        <div class="clips-lbl" id="cf-clips-lbl">5 suggested clips</div>
+        <div id="cf-clips"></div>
+        <div id="cf-preview" style="display:none" class="preview">
+          <div class="preview-head">
+            <span class="preview-title" id="pv-title"></span>
+            <button class="close-btn" onclick="closePreview()">✕</button>
+          </div>
+          <div class="ts-row">
+            <span class="ts-lbl">Window:</span>
+            <span class="ts-chip" id="pv-ts"></span>
+            <span class="ts-lbl">· 20 sec</span>
+          </div>
+          <div class="block"><div class="block-lbl">Why it works</div><div class="block-txt" id="pv-why"></div></div>
+          <div class="block"><div class="block-lbl">Caption</div><div class="block-txt" id="pv-cap"></div></div>
+          <div class="block"><div class="block-lbl">Best platform</div><div class="block-txt" id="pv-plat"></div></div>
+          <div class="block">
+            <div class="block-lbl">Clip layout</div>
+            <div class="layout-row">
+              <button class="layout-btn active" data-layout="original" onclick="setLayout('original')">
+                <svg width="28" height="28" viewBox="0 0 28 28"><rect x="2" y="7" width="24" height="14" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+                <span>Original<br>16:9</span>
+              </button>
+              <button class="layout-btn" data-layout="vertical" onclick="setLayout('vertical')">
+                <svg width="28" height="28" viewBox="0 0 28 28"><rect x="8" y="2" width="12" height="24" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+                <span>Vertical<br>9:16</span>
+              </button>
+              <button class="layout-btn" data-layout="square" onclick="setLayout('square')">
+                <svg width="28" height="28" viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+                <span>Square<br>1:1</span>
+              </button>
+            </div>
+          </div>
+          <div class="act-row">
+            <button class="act-primary" onclick="openYT()">▶ Open in YouTube</button>
+            <button class="act-ghost" id="copy-btn" onclick="copyCaption()">Copy caption</button>
+            <button class="act-ghost" id="download-btn" onclick="downloadClip()">⬇ Download clip</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:4px">
+          <button class="act-ghost" onclick="cfAnalyze()">↻ Regenerate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="section" id="history-section">
+  <div class="sec-label">Your history</div>
+  <h2>Past analyses</h2>
+  <p class="sec-sub">Every video you've forged is saved here — revisit clips anytime without re-analyzing.</p>
+  <div id="history-empty" class="history-empty">No saved analyses yet — forge your first clip above.</div>
+  <div id="history-list" class="history-list"></div>
+</div>
+
+<hr>
+
+<div class="section">
+  <div class="sec-label">Social proof</div>
+  <h2 style="margin-bottom:2rem">Creators who forged ahead</h2>
+  <div class="proof-grid">
+    <div class="proof-card">
+      <div class="stars">★★★★★</div>
+      <p class="proof-q">"I used to spend 3 hours finding the right clip from a podcast. Now it's done before I finish my coffee. ClipForge is just unfair."</p>
+      <div class="proof-author">
+        <div class="avatar" style="background:rgba(124,109,250,0.18);color:#a99bff">SR</div>
+        <div><div class="proof-name">Simran R.</div><div class="proof-role">YouTube · 280K subs</div></div>
+      </div>
+    </div>
+    <div class="proof-card">
+      <div class="stars">★★★★★</div>
+      <p class="proof-q">"The caption suggestions are scary good. It's like having a full-time social media editor who never sleeps and never complains."</p>
+      <div class="proof-author">
+        <div class="avatar" style="background:rgba(52,211,153,0.14);color:#34d399">MK</div>
+        <div><div class="proof-name">Marcus K.</div><div class="proof-role">Agency · 40+ clients</div></div>
+      </div>
+    </div>
+    <div class="proof-card">
+      <div class="stars">★★★★★</div>
+      <p class="proof-q">"Went from 12K to 85K followers on Reels in 6 weeks, mostly repurposing old videos. ClipForge found moments I completely missed."</p>
+      <div class="proof-author">
+        <div class="avatar" style="background:rgba(251,191,36,0.14);color:#fbbf24">AP</div>
+        <div><div class="proof-name">Ayesha P.</div><div class="proof-role">Finance creator · TikTok</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cta-wrap">
+  <h2>Your best content is already recorded.<br>Let ClipForge find it.</h2>
+  <p class="cta-sub">Start forging clips in seconds — no account required.</p>
+  <button class="btn-primary" onclick="scrollTool()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+    Forge your first clip
+  </button>
+</div>
+
+<footer>
+  <span class="foot-logo">Clip<span>Forge</span></span>
+  <div class="foot-links"><a>Privacy</a><a>Terms</a><a>Contact</a></div>
+  <span class="foot-copy">© 2026 ClipForge. All rights reserved.</span>
+</footer>
+
+<script>
+  let _vid = '', _clips = [], _sel = null, _layout = 'original';
+
+  function scrollTool() { document.getElementById('tool-section').scrollIntoView({behavior:'smooth'}); }
+
+  function fmtT(s) { const r=Math.round(s),m=Math.floor(r/60),sec=r%60; return m+':'+(sec+'').padStart(2,'0'); }
+
+  // Tries several strategies to recover valid JSON from an AI response that
+  // may have markdown fences, trailing commas, control characters, or stray
+  // text before/after the actual JSON object.
+  function parseAiJson(raw) {
+    const attempts = [];
+
+    // 1. Direct parse after stripping markdown code fences
+    attempts.push(() => JSON.parse(raw.replace(/```json|```/g, '').trim()));
+
+    // 2. Extract the first balanced {...} block by bracket-counting
+    //    (more reliable than a greedy regex when there's trailing text)
+    attempts.push(() => {
+      const start = raw.indexOf('{');
+      if (start === -1) throw new Error('no opening brace');
+      let depth = 0, inString = false, escape = false;
+      for (let i = start; i < raw.length; i++) {
+        const ch = raw[i];
+        if (escape) { escape = false; continue; }
+        if (ch === '\\') { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === '{') depth++;
+        if (ch === '}') {
+          depth--;
+          if (depth === 0) return JSON.parse(raw.slice(start, i + 1));
+        }
+      }
+      throw new Error('no balanced brace found');
+    });
+
+    // 3. Same as #2 but also strip trailing commas before } or ]
+    attempts.push(() => {
+      const start = raw.indexOf('{');
+      const end = raw.lastIndexOf('}');
+      if (start === -1 || end === -1) throw new Error('no braces');
+      const cleaned = raw.slice(start, end + 1)
+        .replace(/,\s*([}\]])/g, '$1')
+        .replace(/[\u0000-\u001F]+/g, ' ');
+      return JSON.parse(cleaned);
+    });
+
+    for (const attempt of attempts) {
+      try {
+        const result = attempt();
+        if (result && typeof result === 'object') return result;
+      } catch (_) { /* try next strategy */ }
+    }
+    return null;
+  }
+
+  function extractId(url) {
+    try {
+      const u = new URL(url.includes('://')?url:'https://'+url);
+      const h = u.hostname.replace(/^www\./,'');
+      if (h==='youtu.be') { const id=u.pathname.split('/')[1]; if(id) return id.split('?')[0]; }
+      const v = u.searchParams.get('v'); if(v) return v;
+      const p = u.pathname.split('/').filter(Boolean);
+      const i = p.findIndex(x=>x==='embed'||x==='shorts');
+      if(i!==-1&&p[i+1]) return p[i+1];
+    } catch(_) {}
+    return null;
+  }
+
+  function setStatus(msg) { const el=document.getElementById('cf-status'); el.style.display=msg?'flex':'none'; document.getElementById('cf-status-txt').textContent=msg||''; }
+  function setError(msg)  { const el=document.getElementById('cf-err'); el.style.display=msg?'block':'none'; el.textContent=msg||''; }
+
+  async function cfAnalyze() {
+    setError(''); _clips=[]; _sel=null;
+    document.getElementById('cf-meta').style.display='none';
+    document.getElementById('cf-clips-wrap').style.display='none';
+    document.getElementById('cf-preview').style.display='none';
+
+    const url = document.getElementById('cf-url').value.trim();
+    if (!url) { setError('Please enter a YouTube URL to get started.'); return; }
+    const vid = extractId(url);
+    if (!vid) { setError("Couldn't find a valid video ID. Try a youtube.com/watch?v= or youtu.be/ link."); return; }
+
+    _vid = vid;
+    document.getElementById('cf-btn').disabled = true;
+    document.getElementById('cf-btn-txt').textContent = 'Forging…';
+    setStatus('Fetching video info…');
+
+    let title='', author='', thumb='';
+    try {
+      const r = await fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v='+vid+'&format=json');
+      if (r.ok) { const d=await r.json(); title=d.title||''; author=d.author_name||''; thumb=d.thumbnail_url||''; }
+    } catch(_) {}
+    if (!title) title = 'YouTube Video';
+
+    setStatus('ClipForge AI is scanning for viral moments…');
+
+    const clipDuration = parseInt(document.getElementById('cf-duration').value, 10) || 20;
+    const clipCount = parseInt(document.getElementById('cf-count').value, 10) || 5;
+
+    const prompt = `You are a viral short-form video strategist. Analyze this YouTube video and suggest the ${clipCount} best ${clipDuration}-second clips.
+
+Video title: "${title}"
+Channel: "${author}"
+Video ID: ${vid}
+
+Return ONLY a valid JSON object (no markdown, no extra text) in this exact structure:
+{
+  "videoSummary": "one sentence about what this video is about",
+  "duration": "estimated duration e.g. 10 min",
+  "contentType": "Tutorial / Interview / Vlog / Review / News / Educational / Entertainment",
+  "clips": [
+    {
+      "title": "catchy clip title max 8 words",
+      "startSeconds": 30,
+      "endSeconds": 50,
+      "tag": "viral",
+      "description": "1-2 sentences on what happens and why it stands out",
+      "whyItWorks": "2-3 sentences on the psychological or engagement hook",
+      "captionSuggestion": "punchy social caption with 2-3 hashtags",
+      "bestPlatform": "TikTok / Instagram Reels / YouTube Shorts with a one-line reason"
+    }
+  ]
+}
+Generate exactly ${clipCount} clips. Each clip must be exactly ${clipDuration} seconds long
+(endSeconds - startSeconds = ${clipDuration}). tag must be one of: viral, highlight, educational, funny.
+Spread clips across the video, avoiding overlap.`;
+
+    try {
+      // Calls our local server — which then calls Anthropic safely
+      const resp = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ messages: [{role:'user', content:prompt}] })
+      });
+      const data = await resp.json();
+      if (!resp.ok || data.error) throw new Error(data.error?.message || 'API error '+resp.status);
+
+      const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+      if (!raw) throw new Error('Empty response — please try again.');
+
+      const parsed = parseAiJson(raw);
+      if (!parsed) throw new Error('Could not parse the AI response. Please try again — this usually works on a retry.');
+
+      if (!parsed.clips?.length) throw new Error('No clips returned. Try a different video.');
+      _clips = parsed.clips;
+
+      document.getElementById('cf-clips-lbl').textContent = `${_clips.length} suggested clip${_clips.length === 1 ? '' : 's'} · ${clipDuration}s each`;
+
+      document.getElementById('cf-title').textContent = title;
+      document.getElementById('cf-thumb').innerHTML = thumb?`<img src="${thumb}" alt="thumb">`:'';
+      const chips = document.getElementById('cf-chips');
+      chips.innerHTML = '';
+      if(author) chips.innerHTML += `<span class="chip">${author}</span>`;
+      if(parsed.contentType) chips.innerHTML += `<span class="chip">${parsed.contentType}</span>`;
+      if(parsed.duration) chips.innerHTML += `<span class="chip">${parsed.duration}</span>`;
+      document.getElementById('cf-meta').style.display = 'flex';
+
+      const grid = document.getElementById('cf-clips');
+      grid.innerHTML = '';
+      _clips.forEach((c,i) => {
+        const tag = ['viral','highlight','educational','funny'].includes(c.tag)?c.tag:'highlight';
+        grid.innerHTML += `<div class="clip" id="cl-${i}" onclick="selClip(${i})">
+          <div class="clip-num">${i+1}</div>
+          <div style="flex:1">
+            <div class="clip-title">${c.title}</div>
+            <div class="clip-desc">${c.description}</div>
+            <div class="clip-foot">
+              <span class="ts-badge">${fmtT(c.startSeconds)} → ${fmtT(c.endSeconds)}</span>
+              <span class="tag tag-${tag}">${tag}</span>
+            </div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('cf-clips-wrap').style.display = 'block';
+
+      // Save this analysis to history (fire-and-forget — doesn't block the UI)
+      fetch('/api/history/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId: vid,
+          videoUrl: url,
+          videoTitle: title,
+          videoAuthor: author,
+          videoThumbnail: thumb,
+          contentType: parsed.contentType || '',
+          videoSummary: parsed.videoSummary || '',
+          clipDuration: clipDuration,
+          clips: _clips,
+        }),
+      }).then(() => { if (typeof refreshHistory === 'function') refreshHistory(); }).catch(() => {});
+
+    } catch(err) {
+      setError('Analysis failed: '+(err.message||'Unknown error. Please try again.'));
+    }
+
+    setStatus('');
+    document.getElementById('cf-btn').disabled = false;
+    document.getElementById('cf-btn-txt').textContent = 'Forge';
+  }
+
+  function selClip(idx) {
+    document.querySelectorAll('.clip').forEach(c=>c.classList.remove('active'));
+    document.getElementById('cl-'+idx).classList.add('active');
+    _sel = idx;
+    const c = _clips[idx];
+    document.getElementById('pv-title').textContent = c.title;
+    document.getElementById('pv-ts').textContent = fmtT(c.startSeconds)+' → '+fmtT(c.endSeconds);
+    document.getElementById('pv-why').textContent = c.whyItWorks||c.description;
+    document.getElementById('pv-cap').textContent = c.captionSuggestion||'';
+    document.getElementById('pv-plat').textContent = c.bestPlatform||'';
+    setLayout('original');
+    const pv = document.getElementById('cf-preview');
+    pv.style.display = 'block';
+    pv.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function setLayout(layout) {
+    _layout = layout;
+    document.querySelectorAll('.layout-btn').forEach(b => b.classList.toggle('active', b.dataset.layout === layout));
+  }
+
+  function closePreview() {
+    document.getElementById('cf-preview').style.display = 'none';
+    document.querySelectorAll('.clip').forEach(c=>c.classList.remove('active'));
+    _sel = null;
+  }
+
+  function openYT() {
+    if(_sel===null) return;
+    window.open('https://www.youtube.com/watch?v='+_vid+'&t='+Math.round(_clips[_sel].startSeconds)+'s','_blank');
+  }
+
+  function copyCaption() {
+    if(_sel===null) return;
+    navigator.clipboard?.writeText(_clips[_sel].captionSuggestion||'');
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(()=>{ btn.textContent='Copy caption'; }, 1800);
+  }
+
+  async function downloadClip() {
+    if (_sel === null) return;
+    const c = _clips[_sel];
+    const btn = document.getElementById('download-btn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Starting…';
+    setError('');
+
+    try {
+      // Step 1: kick off the job — returns instantly, no risk of proxy timeout
+      const startResp = await fetch('/api/download/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId: _vid,
+          start: Math.round(c.startSeconds),
+          end: Math.round(c.endSeconds),
+          layout: _layout,
+        }),
+      });
+
+      if (!startResp.ok) {
+        const errData = await startResp.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `Could not start download (HTTP ${startResp.status})`);
+      }
+
+      const { jobId } = await startResp.json();
+      if (!jobId) throw new Error('Server did not return a job ID.');
+
+      // Step 2: poll status every 3s, up to ~5 minutes total
+      const maxAttempts = 100;
+      let attempt = 0;
+      let finalStatus = null;
+
+      while (attempt < maxAttempts) {
+        await new Promise(r => setTimeout(r, 3000));
+        attempt++;
+
+        const elapsed = attempt * 3;
+        btn.textContent = _layout === 'original'
+          ? `⏳ Downloading… (${elapsed}s)`
+          : `⏳ Downloading & reframing… (${elapsed}s)`;
+
+        const statusResp = await fetch(`/api/download/status?id=${encodeURIComponent(jobId)}`);
+        if (!statusResp.ok) {
+          const errData = await statusResp.json().catch(() => ({}));
+          throw new Error(errData.error?.message || 'Lost track of the download job.');
+        }
+
+        const statusData = await statusResp.json();
+        if (statusData.status === 'done') { finalStatus = 'done'; break; }
+        if (statusData.status === 'error') {
+          throw new Error(statusData.error || 'Download failed.');
+        }
+        // status === 'processing' — keep polling
+      }
+
+      if (finalStatus !== 'done') {
+        throw new Error('Download is taking unusually long. Please try again, or try the Original layout.');
+      }
+
+      // Step 3: fetch the finished file
+      btn.textContent = '⏳ Fetching file…';
+      const fileResp = await fetch(`/api/download/file?id=${encodeURIComponent(jobId)}`);
+      if (!fileResp.ok) {
+        const errData = await fileResp.json().catch(() => ({}));
+        throw new Error(errData.error?.message || 'Could not retrieve the finished file.');
+      }
+
+      const blob = await fileResp.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      const layoutSuffix = _layout === 'original' ? '' : `_${_layout}`;
+      a.download = `clip_${_vid}_${Math.round(c.startSeconds)}-${Math.round(c.endSeconds)}${layoutSuffix}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objUrl);
+
+      btn.textContent = '✓ Downloaded!';
+      setTimeout(() => { btn.textContent = origText; }, 1800);
+    } catch (err) {
+      setError('Download failed: ' + (err.message || 'Unknown error'));
+      btn.textContent = origText;
+    }
+
+    btn.disabled = false;
+  }
+
+  document.getElementById('cf-url').addEventListener('keydown', e=>{ if(e.key==='Enter') cfAnalyze(); });
+
+  async function doLogout() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+
+  (async function checkAdmin() {
+    const adminLink = document.getElementById('admin-link');
+    // Explicitly hidden by default — only shown if the server confirms admin status
+    adminLink.classList.add('hidden-link');
+    try {
+      const r = await fetch('/api/me', { credentials: 'same-origin' });
+      if (!r.ok) return; // not logged in or error — stay hidden
+      const me = await r.json();
+      if (me && me.is_admin === true) {
+        adminLink.classList.remove('hidden-link');
+      }
+    } catch (_) {
+      // any failure — stay hidden, fail safe
+    }
+  })();
+
+  function fmtRelativeTime(unixSeconds) {
+    const diffMs = Date.now() - unixSeconds * 1000;
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d ago`;
+    return new Date(unixSeconds * 1000).toLocaleDateString();
+  }
+
+  async function refreshHistory() {
+    const emptyEl = document.getElementById('history-empty');
+    const listEl = document.getElementById('history-list');
+    try {
+      const r = await fetch('/api/history');
+      if (!r.ok) { emptyEl.style.display = 'block'; listEl.innerHTML = ''; return; }
+      const data = await r.json();
+      const items = data.history || [];
+
+      if (items.length === 0) {
+        emptyEl.style.display = 'block';
+        listEl.innerHTML = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      listEl.innerHTML = items.map(item => {
+        let clipCount = item.clip_count || 0;
+        return `
+        <div class="history-card">
+          <div class="history-thumb">${item.video_thumbnail ? `<img src="${item.video_thumbnail}" alt="thumb">` : ''}</div>
+          <div class="history-body">
+            <div class="history-title">${item.video_title || 'Untitled video'}</div>
+            <div class="history-meta">
+              ${item.video_author ? `<span class="chip">${item.video_author}</span>` : ''}
+              ${item.content_type ? `<span class="chip">${item.content_type}</span>` : ''}
+              <span class="chip">${clipCount} clip${clipCount===1?'':'s'} · ${item.clip_duration || 20}s</span>
+            </div>
+            <div class="history-actions">
+              <button class="act-ghost" onclick="reloadHistoryItem(${item.id})">↻ Reload clips</button>
+              <button class="act-ghost" onclick="deleteHistoryItem(${item.id})">🗑 Delete</button>
+            </div>
+          </div>
+          <div class="history-time">${fmtRelativeTime(item.created_at)}</div>
+        </div>`;
+      }).join('');
+    } catch (_) {
+      emptyEl.style.display = 'block';
+      listEl.innerHTML = '';
+    }
+  }
+
+  let _historyCache = [];
+
+  async function reloadHistoryItem(id) {
+    try {
+      const r = await fetch('/api/history');
+      const data = await r.json();
+      _historyCache = data.history || [];
+      const item = _historyCache.find(h => h.id === id);
+      if (!item) return;
+
+      _vid = item.video_id;
+      _clips = JSON.parse(item.clips_json);
+      _sel = null;
+
+      document.getElementById('cf-url').value = item.video_url;
+      document.getElementById('cf-clips-lbl').textContent = `${_clips.length} suggested clip${_clips.length===1?'':'s'} · ${item.clip_duration || 20}s each`;
+      document.getElementById('cf-title').textContent = item.video_title || 'Untitled video';
+      document.getElementById('cf-thumb').innerHTML = item.video_thumbnail ? `<img src="${item.video_thumbnail}" alt="thumb">` : '';
+
+      const chips = document.getElementById('cf-chips');
+      chips.innerHTML = '';
+      if (item.video_author) chips.innerHTML += `<span class="chip">${item.video_author}</span>`;
+      if (item.content_type) chips.innerHTML += `<span class="chip">${item.content_type}</span>`;
+      document.getElementById('cf-meta').style.display = 'flex';
+
+      const grid = document.getElementById('cf-clips');
+      grid.innerHTML = '';
+      _clips.forEach((c, i) => {
+        const tag = ['viral','highlight','educational','funny'].includes(c.tag) ? c.tag : 'highlight';
+        grid.innerHTML += `<div class="clip" id="cl-${i}" onclick="selClip(${i})">
+          <div class="clip-num">${i+1}</div>
+          <div style="flex:1">
+            <div class="clip-title">${c.title}</div>
+            <div class="clip-desc">${c.description}</div>
+            <div class="clip-foot">
+              <span class="ts-badge">${fmtT(c.startSeconds)} → ${fmtT(c.endSeconds)}</span>
+              <span class="tag tag-${tag}">${tag}</span>
+            </div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('cf-clips-wrap').style.display = 'block';
+      document.getElementById('cf-preview').style.display = 'none';
+
+      document.getElementById('tool-section').scrollIntoView({ behavior: 'smooth' });
+    } catch (_) {
+      setError('Could not reload this history entry.');
+    }
+  }
+
+  async function deleteHistoryItem(id) {
+    if (!confirm('Delete this saved analysis? This cannot be undone.')) return;
+    try {
+      await fetch('/api/history/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      refreshHistory();
+    } catch (_) {}
+  }
+
+  refreshHistory();
+</script>
+</body>
+</html>

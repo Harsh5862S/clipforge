@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Local database (SQLite leftovers, if any)
+*.db
+
+# YouTube cookies (sensitive - never commit)
+youtube_cookies.txt
+
+# Downloaded clips (temporary, generated at runtime)
+downloads/
+
+# Environment files (never commit real secrets)
+.env
+
+# OS/editor junk
+.DS_Store
+*.swp
+.vscode/
+.idea/

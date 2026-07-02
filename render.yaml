@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: clipforge
+    runtime: docker
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: SENDER_EMAIL
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clipforge-db
+          property: connectionString
+
+databases:
+  - name: clipforge-db
+    plan: free

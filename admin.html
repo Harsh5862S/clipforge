@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — ClipForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg0:#09090f; --bg1:#0f0f1a; --bg2:#141425; --bg3:#1a1a30;
+    --border:rgba(120,100,255,0.15); --borderB:rgba(120,100,255,0.38);
+    --purple:#7c6dfa; --pt:#a99bff; --t0:#f0eeff; --t1:#a8a0cc; --t2:#6a6490;
+  }
+  body { background:var(--bg0); color:var(--t0); font-family:'Inter',sans-serif; min-height:100vh; }
+  nav { display:flex; align-items:center; justify-content:space-between; padding:0 2rem; height:56px; border-bottom:0.5px solid var(--border); }
+  .logo { font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:700; }
+  .logo span { color:var(--purple); }
+  .nav-right { display:flex; gap:1rem; align-items:center; }
+  .nav-right a, .nav-right button { font-size:13px; color:var(--t1); text-decoration:none; background:none; border:none; cursor:pointer; }
+  .container { max-width:1000px; margin:0 auto; padding:2.5rem 2rem; }
+  h1 { font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; margin-bottom:0.4rem; }
+  .sub { font-size:14px; color:var(--t1); margin-bottom:2rem; }
+  .stat-row { display:flex; gap:14px; margin-bottom:2rem; flex-wrap:wrap; }
+  .stat-card { background:var(--bg1); border:0.5px solid var(--border); border-radius:12px; padding:1.2rem 1.5rem; flex:1; min-width:140px; }
+  .stat-num { font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; }
+  .stat-lbl { font-size:12px; color:var(--t2); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px; }
+  .panel { background:var(--bg1); border:0.5px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:2rem; }
+  .panel-head { padding:1rem 1.4rem; border-bottom:0.5px solid var(--border); font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:11px; color:var(--t2); text-transform:uppercase; letter-spacing:0.06em; font-family:'JetBrains Mono',monospace; padding:10px 14px; border-bottom:0.5px solid var(--border); }
+  td { padding:11px 14px; font-size:13px; border-bottom:0.5px solid var(--border); color:var(--t1); }
+  tr:last-child td { border-bottom:none; }
+  .badge { font-size:11px; padding:2px 8px; border-radius:5px; font-family:'JetBrains Mono',monospace; }
+  .badge-admin { background:rgba(124,109,250,0.12); color:var(--pt); border:0.5px solid rgba(124,109,250,0.3); }
+  .badge-banned { background:rgba(220,50,50,0.1); color:#f08080; border:0.5px solid rgba(220,50,50,0.3); }
+  .badge-active { background:rgba(52,211,153,0.1); color:#34d399; border:0.5px solid rgba(52,211,153,0.25); }
+  .row-actions { display:flex; gap:6px; }
+  .act-btn { font-size:12px; padding:5px 11px; border-radius:6px; border:0.5px solid var(--borderB); background:transparent; color:var(--t1); cursor:pointer; }
+  .act-btn:hover { background:var(--bg3); }
+  .act-btn.danger { color:#f08080; border-color:rgba(220,50,50,0.35); }
+  .act-btn.danger:hover { background:rgba(220,50,50,0.08); }
+  .empty { padding:2rem; text-align:center; color:var(--t2); font-size:13px; }
+  .denied { max-width:420px; margin:6rem auto; text-align:center; }
+  .denied h2 { font-family:'Space Grotesk',sans-serif; margin-bottom:0.6rem; }
+  .denied p { color:var(--t1); font-size:14px; }
+  .denied a { color:var(--pt); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+async function init() {
+  const app = document.getElementById('app');
+
+  let me;
+  try {
+    const r = await fetch('/api/me');
+    if (!r.ok) { window.location.href = '/login'; return; }
+    me = await r.json();
+  } catch (_) { window.location.href = '/login'; return; }
+
+  if (!me.is_admin) {
+    app.innerHTML = `
+      <div class="denied">
+        <h2>Admins only</h2>
+        <p>You don't have permission to view this page. <a href="/">Back to ClipForge</a></p>
+      </div>`;
+    return;
+  }
+
+  let users = [], activity = [];
+  try {
+    const [uResp, aResp] = await Promise.all([fetch('/api/admin/users'), fetch('/api/admin/activity')]);
+    users = (await uResp.json()).users || [];
+    activity = (await aResp.json()).activity || [];
+  } catch (_) {}
+
+  const totalUsers = users.length;
+  const bannedCount = users.filter(u => u.is_banned).length;
+  const verifiedCount = users.filter(u => u.is_verified).length;
+
+  function fmtDate(ts) {
+    return new Date(ts * 1000).toLocaleString();
+  }
+
+  app.innerHTML = `
+    <nav>
+      <div class="logo">Clip<span>Forge</span> · Admin</div>
+      <div class="nav-right">
+        <a href="/">← Back to app</a>
+        <button onclick="logout()">Log out</button>
+      </div>
+    </nav>
+    <div class="container">
+      <h1>Admin dashboard</h1>
+      <p class="sub">Manage users and view activity across ClipForge.</p>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num">${totalUsers}</div><div class="stat-lbl">Total users</div></div>
+        <div class="stat-card"><div class="stat-num">${verifiedCount}</div><div class="stat-lbl">Verified</div></div>
+        <div class="stat-card"><div class="stat-num">${bannedCount}</div><div class="stat-lbl">Banned</div></div>
+        <div class="stat-card"><div class="stat-num">${activity.length}</div><div class="stat-lbl">Recent events</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Users</div>
+        ${users.length === 0 ? '<div class="empty">No users yet.</div>' : `
+        <table>
+          <thead><tr><th>Email</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${users.map(u => `
+              <tr>
+                <td>${u.email} ${u.is_admin ? '<span class="badge badge-admin">admin</span>' : ''}</td>
+                <td>${u.is_banned ? '<span class="badge badge-banned">banned</span>' : (u.is_verified ? '<span class="badge badge-active">active</span>' : '<span class="badge">unverified</span>')}</td>
+                <td>${fmtDate(u.created_at)}</td>
+                <td>
+                  <div class="row-actions">
+                    ${u.is_admin ? '' : `
+                      <button class="act-btn" onclick="toggleBan(${u.id}, ${u.is_banned ? 0 : 1})">${u.is_banned ? 'Unban' : 'Ban'}</button>
+                      <button class="act-btn danger" onclick="removeUser(${u.id}, '${u.email}')">Delete</button>
+                    `}
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`}
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Recent activity</div>
+        ${activity.length === 0 ? '<div class="empty">No activity yet.</div>' : `
+        <table>
+          <thead><tr><th>User</th><th>Action</th><th>Detail</th><th>When</th></tr></thead>
+          <tbody>
+            ${activity.map(a => `
+              <tr>
+                <td>${a.email}</td>
+                <td>${a.action}</td>
+                <td>${a.detail || '—'}</td>
+                <td>${fmtDate(a.created_at)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`}
+      </div>
+    </div>
+  `;
+}
+
+async function toggleBan(userId, banned) {
+  await fetch('/api/admin/ban', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, banned: !!banned }),
+  });
+  init();
+}
+
+async function removeUser(userId, email) {
+  if (!confirm(`Delete user ${email}? This cannot be undone.`)) return;
+  await fetch('/api/admin/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
+  init();
+}
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/login';
+}
+
+init();
+</script>
+</body>
+</html>
