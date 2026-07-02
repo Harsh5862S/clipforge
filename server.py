@@ -378,6 +378,38 @@ class Handler(BaseHTTPRequestHandler):
             })
             return
 
+        if path == "/api/admin/cookie-debug":
+            user = self._current_user()
+            if user is None or not user["is_admin"]:
+                self._send_json(403, {"error": {"message": "Admins only"}})
+                return
+            cookie_env_len = len(YOUTUBE_COOKIES_CONTENT)
+            cookie_file_exists = bool(COOKIES_FILE_PATH and os.path.exists(COOKIES_FILE_PATH))
+            cookie_file_lines = 0
+            cookie_file_size = 0
+            cookie_first_line = ""
+            cookie_last_line = ""
+            if cookie_file_exists:
+                with open(COOKIES_FILE_PATH) as cf:
+                    lines = cf.readlines()
+                    cookie_file_lines = len(lines)
+                    cookie_file_size = os.path.getsize(COOKIES_FILE_PATH)
+                    non_comment = [l.strip() for l in lines if l.strip() and not l.startswith("#")]
+                    cookie_first_line = lines[0].strip() if lines else ""
+                    cookie_last_line = lines[-1].strip() if lines else ""
+                    youtube_cookies = [l for l in non_comment if "youtube" in l.lower()]
+            self._send_json(200, {
+                "env_var_length": cookie_env_len,
+                "env_var_set": cookie_env_len > 0,
+                "cookie_file_exists": cookie_file_exists,
+                "cookie_file_lines": cookie_file_lines,
+                "cookie_file_size_bytes": cookie_file_size,
+                "first_line": cookie_first_line,
+                "last_line": cookie_last_line,
+                "youtube_cookie_rows": len(youtube_cookies) if cookie_file_exists else 0,
+            })
+            return
+
         if path == "/api/admin/users":
             user = self._current_user()
             if user is None or not user["is_admin"]:
