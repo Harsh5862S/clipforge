@@ -60,7 +60,7 @@ YOUTUBE_COOKIES_CONTENT = os.environ.get("YOUTUBE_COOKIES", "")
 COOKIES_FILE_PATH = os.path.join(HERE, "youtube_cookies.txt") if YOUTUBE_COOKIES_CONTENT else None
 
 if YOUTUBE_COOKIES_CONTENT:
-    with open(COOKIES_FILE_PATH, "w") as _f:
+    with open(COOKIES_FILE_PATH, "w",encoding="utf-8") as _f:
         _f.write(YOUTUBE_COOKIES_CONTENT)
 # ───────────────────────────────────────────────────────────────────────────
 
