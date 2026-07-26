@@ -63,6 +63,8 @@ if YOUTUBE_COOKIES_CONTENT:
     with open(COOKIES_FILE_PATH, "w",encoding="utf-8") as _f:
         _f.write(YOUTUBE_COOKIES_CONTENT)
 # ───────────────────────────────────────────────────────────────────────────
+print("Cookies loaded:", bool(YOUTUBE_COOKIES_CONTENT))
+print("Cookie file path:", COOKIES_FILE_PATH)
 
 # Pages that don't require login
 PUBLIC_PAGES = {"/login", "/signup", "/verify-otp"}
